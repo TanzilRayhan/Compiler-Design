@@ -1,0 +1,106 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef enum {
+    ADD, SUB, MUL, DIV, MOD, ASSIGN, GOTO, LABEL, IF, READ, WRITE
+} Operator;
+
+typedef struct {
+    Operator op;
+    char *arg1;
+    char *arg2;
+    char *result;
+} Quadruple;
+
+typedef struct {
+    char *name;
+    int value;
+} Symbol;
+
+Symbol *symbolTable[100];
+int symbolTableIndex = 0;
+
+Quadruple *TAC[100];
+int TACIndex = 0;
+
+void generateTAC(Operator op, char *arg1, char *arg2, char *result) {
+    Quadruple *quadruple = (Quadruple *) malloc(sizeof(Quadruple));
+    quadruple->op = op;
+    quadruple->arg1 = strdup(arg1);
+    quadruple->arg2 = strdup(arg2);
+    quadruple->result = strdup(result);
+
+    TAC[TACIndex++] = quadruple;
+}
+
+int findSymbolIndex(char *name) {
+    for (int i = 0; i < symbolTableIndex; i++) {
+        if (strcmp(symbolTable[i]->name, name) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void addSymbol(char *name, int value) {
+    Symbol *symbol = (Symbol *) malloc(sizeof(Symbol));
+    symbol->name = strdup(name);
+    symbol->value = value;
+
+    symbolTable[symbolTableIndex++] = symbol;
+}
+
+void printTAC() {
+    for (int i = 0; i < TACIndex; i++) {
+        Quadruple *quadruple = TAC[i];
+
+        switch (quadruple->op) {
+            case ADD:
+                printf("%s = %s + %s\n", quadruple->result, quadruple->arg1, quadruple->arg2);
+                break;
+            case SUB:
+                printf("%s = %s - %s\n", quadruple->result, quadruple->arg1, quadruple->arg2);
+                break;
+            case MUL:
+                printf("%s = %s * %s\n", quadruple->result, quadruple->arg1, quadruple->arg2);
+                break;
+            case DIV:
+                printf("%s = %s / %s\n", quadruple->result, quadruple->arg1, quadruple->arg2);
+                break;
+            case MOD:
+                printf("%s = %s %% %s\n", quadruple->result, quadruple->arg1, quadruple->arg2);
+                break;
+            case ASSIGN:
+                printf("%s = %s\n", quadruple->result, quadruple->arg1);
+                break;
+            case GOTO:
+                printf("goto %s\n", quadruple->result);
+                break;
+            case LABEL:
+                printf("%s:\n", quadruple->result);
+                break;
+            case IF:
+                printf("if %s == %s goto %s\n", quadruple->arg1, quadruple->arg2, quadruple->result);
+                break;
+            case READ:
+                printf("read %s\n", quadruple->result);
+                break;
+            case WRITE:
+                printf("write %s\n", quadruple->result);
+                break;
+        }
+    }
+}
+
+int main() {
+    generateTAC(ASSIGN, "a", "10", "t1");
+    generateTAC(ASSIGN, "b", "20", "t2");
+    generateTAC(ADD, "t1", "t2", "t3");
+    generateTAC(WRITE, "t3");
+
+    printTAC();
+
+    return 0;
+}
